@@ -4,6 +4,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -20,8 +22,8 @@ public class SpringIntegrationTest {
   @Autowired
   private TestRestTemplate app;
 
+  private ArrayList<Integer> positions = new ArrayList<Integer>();
   private int position;
-  private long actualValue;
 
   private long getFiboValue(int position) {
     ResponseEntity<Fibo> response = app.getForEntity(
@@ -38,35 +40,32 @@ public class SpringIntegrationTest {
   @When("I ask for 3rd or later Fibonacci number")
   public void i_ask_for_3rd_or_later_fibonacci_number() throws Throwable{
     assertTrue(getFiboValue(3) == 1);
-    position = (int)(Math.random() * 50) + 4;
-    assertTrue(position > 3);
-    actualValue = getFiboValue(position);
+    positions.addLast((int)3);
+    for(int i = 0; i < 10; i++)
+      positions.addLast((int)(Math.random() * 50 + 4));
   }
   
   @When("I ask for {word} Fibonacci number")
   public void I_Ask_For_Nth_Fibo_Num(String which) throws Throwable {
     switch(which) {
-      case "1st":
-        position = 1;
-        actualValue = getFiboValue(position);
-        break;
-      case "2nd":
-        position = 2;
-        break;
+      case "1st": position = 1; break;
+      case "2nd": position = 2; break;
       default:
         throw new Exception("Unknown sequence position specification: " + which);
     }
-    actualValue = getFiboValue(position);
   }
 
   @Then("I get the predefined number {long}")
   public void I_get_the_predefined_number(long expectedValue) {
-    assertEquals(expectedValue, actualValue);
+    assertEquals(expectedValue, getFiboValue(position));
   }
 
-  @Then("I get the sum of its two predecessors")
+  @Then("I always get the sum of its two predecessors")
   public void I_get_the_sum_of_its_two_predecessors() {
-    long expectedValue = getFiboValue(position - 1) + getFiboValue(position - 2);
-    assertEquals(expectedValue, actualValue);
+    positions.forEach((n) -> {
+      long expected = getFiboValue(n - 1) + getFiboValue(n - 2);
+      long actual = getFiboValue(n);
+      assertEquals(expected, actual);
+    });
   }
 }

@@ -14,4 +14,4 @@ Feature: Fibonacci numbers
 
   Scenario: After 0 and 1, each number is the sum of its two predecessors
     When I ask for 3rd or later Fibonacci number
-    Then I get the sum of its two predecessors
+    Then I always get the sum of its two predecessors
